@@ -1,0 +1,185 @@
+<html>
+
+<head>
+  <title>Canvas painter</title>
+
+  <style>
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: 62.5%;
+}
+
+body > * {
+  box-sizing: border-box;
+}
+
+.container:after {
+  content: "";
+  display: table;
+  clear: both;
+  width: 100vw;
+  position: relative;
+}
+
+.left {
+  float: left;
+  width: 50%;
+  height: 100vh;
+  overflow: auto;
+  position: relative;
+}
+
+.right {
+  float: right;
+  width: 50%;
+  overflow: auto;
+  position: relative;
+  height: 100vh;
+}
+
+textarea#command {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  padding: 1rem;
+}
+
+canvas#can {
+  position: absolute;
+  top: 10rem;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid black;
+}
+
+button#render-btn {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+<button id="render-btn" onclick="render()">Render</button>
+
+<div class="left">
+
+<textarea id="command"></textarea>
+
+</div>
+
+<div class="right">
+
+<canvas id="can"></canvas>
+
+</div>
+</div>
+
+<script>
+canvas = document.getElementById('can')
+ctx = canvas.getContext('2d')
+
+canvas.height = 300
+canvas.width = 300
+
+var context = {
+  size: function (w, h) {
+    canvas.width = w
+    canvas.height = h
+  },
+  line: function (sx, sy, ex, ey) {
+    ctx.beginPath()
+    ctx.moveTo(sx, sy)
+    ctx.lineTo(ex, ey)
+    ctx.stroke()
+  },
+  circle: function (cx, cy, r, full) {
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, 0, 2*Math.PI, false)
+
+    if (full === undefined) {
+      full = true
+    }
+    if (full) {
+      ctx.fill()
+    } else {
+      ctx.stroke()
+    }
+  },
+  fillStyle: function (color) {
+    ctx.fillStyle = color
+  },
+  strokeStyle: function (color) {
+    ctx.strokeStyle = color
+  },
+  translate: function (x, y) {
+    ctx.translate(x, y)
+  },
+  text: function (msg, x, y) {
+    ctx.fillText(msg, x, y)
+  },
+  font: function (val) {
+    ctx.font = val
+  },
+  background: function (color) {
+    var prevColor = ctx.fillStyle
+    ctx.fillStyle = color
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = prevColor
+  }
+}
+
+function evalInContext (command) {
+  try {
+    eval('var self=this;Object.keys(self).forEach(function (key) { window[key] = self[key] });' + command)
+  } catch (e) {
+    alert(e.message)
+  }
+}
+
+function render () {
+  var command = document.getElementById('command').value
+
+  console.log(command)
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  localStorage.setItem('save', command)
+
+  ctx.save()
+
+  evalInContext.call(context, command)
+
+  ctx.restore()
+}
+
+window.addEventListener('keydown', function (e) {
+  if (e.keyCode === 116) {
+    e.preventDefault()
+
+    render()
+  }
+})
+
+window.addEventListener('load', function () {
+  if (localStorage.getItem('save')) {
+    document.getElementById('command').value = localStorage.getItem('save')
+  }
+})
+
+</script>
+
+</body>
+
+</html>

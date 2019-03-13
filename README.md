@@ -1,2 +1,4 @@
 # canvas-paint
-Simple live editing of canvas script
+Simple live editing of canvas script.
+
+Documentation following shortly.
